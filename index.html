@@ -1,0 +1,1778 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/BuenosAires_1.js"></script>
+        <script src="data/RMBA_2.js"></script>
+        <script src="data/AreasPROMEBAIV_3.js"></script>
+        <script src="data/AreasPROMEBAIII_4.js"></script>
+        <script src="data/AreasPROMEBAII_5.js"></script>
+        <script src="data/AreasPROMEBAI_6.js"></script>
+        <script src="data/Establecimientoseducativos_7.js"></script>
+        <script src="data/Centrosdesalud_8.js"></script>
+        <script src="data/RedVialNacional_9.js"></script>
+        <script src="data/RedVialProvincial_10.js"></script>
+        <script src="data/RedFerroviaria_11.js"></script>
+        <script src="data/Estacionesdetren_12.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:24, minZoom:1
+        }).fitBounds([[-35.41692143163135,-59.934691458375795],[-33.80842475400249,-56.9136250068764]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 24,
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_BuenosAires_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre </strong><br />' + (feature.properties['Nombre '] !== null ? autolinker.link(feature.properties['Nombre '].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_BuenosAires_1_0() {
+            return {
+                pane: 'pane_BuenosAires_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,184,247,0.8)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_BuenosAires_1');
+        map.getPane('pane_BuenosAires_1').style.zIndex = 401;
+        map.getPane('pane_BuenosAires_1').style['mix-blend-mode'] = 'normal';
+        var layer_BuenosAires_1 = new L.geoJson(json_BuenosAires_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BuenosAires_1',
+            layerName: 'layer_BuenosAires_1',
+            pane: 'pane_BuenosAires_1',
+            onEachFeature: pop_BuenosAires_1,
+            style: style_BuenosAires_1_0,
+        });
+        bounds_group.addLayer(layer_BuenosAires_1);
+        function pop_RMBA_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre</strong><br />' + (feature.properties['Nombre'] !== null ? autolinker.link(feature.properties['Nombre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RMBA_2_0() {
+            return {
+                pane: 'pane_RMBA_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,184,247,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RMBA_2');
+        map.getPane('pane_RMBA_2').style.zIndex = 402;
+        map.getPane('pane_RMBA_2').style['mix-blend-mode'] = 'normal';
+        var layer_RMBA_2 = new L.geoJson(json_RMBA_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RMBA_2',
+            layerName: 'layer_RMBA_2',
+            pane: 'pane_RMBA_2',
+            onEachFeature: pop_RMBA_2,
+            style: style_RMBA_2_0,
+        });
+        bounds_group.addLayer(layer_RMBA_2);
+        map.addLayer(layer_RMBA_2);
+        function pop_AreasPROMEBAIV_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Barrio</strong><br />' + (feature.properties['Barrio'] !== null ? autolinker.link(feature.properties['Barrio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Préstamo</th>\
+                        <td>' + (feature.properties['Préstamo'] !== null ? autolinker.link(feature.properties['Préstamo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Partido</th>\
+                        <td>' + (feature.properties['Partido'] !== null ? autolinker.link(feature.properties['Partido'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Sup./has.</th>\
+                        <td>' + (feature.properties['Sup./has.'] !== null ? autolinker.link(feature.properties['Sup./has.'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Localidad</th>\
+                        <td>' + (feature.properties['Localidad'] !== null ? autolinker.link(feature.properties['Localidad'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Benef</th>\
+                        <td>' + (feature.properties['Benef'] !== null ? autolinker.link(feature.properties['Benef'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Etapa</th>\
+                        <td>' + (feature.properties['Etapa'] !== null ? autolinker.link(feature.properties['Etapa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Empresa</th>\
+                        <td>' + (feature.properties['Empresa'] !== null ? autolinker.link(feature.properties['Empresa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estado</th>\
+                        <td>' + (feature.properties['Estado'] !== null ? autolinker.link(feature.properties['Estado'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AreasPROMEBAIV_3_0(feature) {
+            switch(String(feature.properties['Barrio'])) {
+                case 'Area Estacion Villegas - B° 15 de marzo, San Petesburgo y Puerta de Hierro - San Justo':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,237,113,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area San Ignacio - La Morita, El Jagüel':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,247,100,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° 2 de Abril':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,240,83,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Almafuerte - Villa Palito':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(250,194,55,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° El Carmen':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,176,68,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Isla Maciel Oeste - Dock Sud':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,174,104,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° La Herradura - Villa Fiorito':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,156,81,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Primavera':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,136,54,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Santa Elena - Güernica':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(244,115,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Trujui - Trujui':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,94,13,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Azul II - Wilde':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,75,2,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Hidalgo - José León Suarez':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(189,62,2,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Tranquila - Dock Sud':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,51,3,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pareje Piria (El Molino, Club de Pesca y El Zanjón) - Punta Lara':
+                    return {
+                pane: 'pane_AreasPROMEBAIV_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(127,39,4,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AreasPROMEBAIV_3');
+        map.getPane('pane_AreasPROMEBAIV_3').style.zIndex = 403;
+        map.getPane('pane_AreasPROMEBAIV_3').style['mix-blend-mode'] = 'normal';
+        var layer_AreasPROMEBAIV_3 = new L.geoJson(json_AreasPROMEBAIV_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AreasPROMEBAIV_3',
+            layerName: 'layer_AreasPROMEBAIV_3',
+            pane: 'pane_AreasPROMEBAIV_3',
+            onEachFeature: pop_AreasPROMEBAIV_3,
+            style: style_AreasPROMEBAIV_3_0,
+        });
+        bounds_group.addLayer(layer_AreasPROMEBAIV_3);
+        map.addLayer(layer_AreasPROMEBAIV_3);
+        function pop_AreasPROMEBAIII_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Barrio</strong><br />' + (feature.properties['Barrio'] !== null ? autolinker.link(feature.properties['Barrio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Préstamo</th>\
+                        <td>' + (feature.properties['Préstamo'] !== null ? autolinker.link(feature.properties['Préstamo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Sup./has.</th>\
+                        <td>' + (feature.properties['Sup./has.'] !== null ? autolinker.link(feature.properties['Sup./has.'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Partido</th>\
+                        <td>' + (feature.properties['Partido'] !== null ? autolinker.link(feature.properties['Partido'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Localidad</th>\
+                        <td>' + (feature.properties['Localidad'] !== null ? autolinker.link(feature.properties['Localidad'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Benef</th>\
+                        <td>' + (feature.properties['Benef'] !== null ? autolinker.link(feature.properties['Benef'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Etapa</th>\
+                        <td>' + (feature.properties['Etapa'] !== null ? autolinker.link(feature.properties['Etapa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Empresa</th>\
+                        <td>' + (feature.properties['Empresa'] !== null ? autolinker.link(feature.properties['Empresa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estado</th>\
+                        <td>' + (feature.properties['Estado'] !== null ? autolinker.link(feature.properties['Estado'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AreasPROMEBAIII_4_0(feature) {
+            switch(String(feature.properties['Barrio'])) {
+                case 'Area El Tala - La Matera - San Francisco Solano, Quilmes':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,255,9,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area Oeste, B° San Jorge - Gdor. Julio A. Costa, Florencio Varela':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(168,250,119,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area San Ignacio - La Morita, El Jagüel, Esteban Echeverria':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,245,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° 2 de Abril - Almirante Brown':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,239,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° 6 de Agosto, Negri, Matadero y Malvicino, Zárate':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(197,232,190,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Almafuerte - Villa Palito, La Matanza':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,224,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° El Carmen - Berisso':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(158,215,152,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Eva Perón - Lanús Oeste':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(134,205,133,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Primavera - José C. Paz':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(111,193,115,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° San Carlos - Moreno':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,181,103,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Santa Elena y Santa Magdalena - Güernica, Pte. Perón':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(61,167,90,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Trujui - Trujui, Moreno':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,150,78,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Angus - Zárate':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(29,134,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Azul - Wilde, Avellaneda':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(10,117,51,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Hidalgo - José León Suares, Gral. San Martín':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,95,38,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Tranquila - Dock Sud, Avellaneda':
+                    return {
+                pane: 'pane_AreasPROMEBAIII_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,68,27,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AreasPROMEBAIII_4');
+        map.getPane('pane_AreasPROMEBAIII_4').style.zIndex = 404;
+        map.getPane('pane_AreasPROMEBAIII_4').style['mix-blend-mode'] = 'normal';
+        var layer_AreasPROMEBAIII_4 = new L.geoJson(json_AreasPROMEBAIII_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AreasPROMEBAIII_4',
+            layerName: 'layer_AreasPROMEBAIII_4',
+            pane: 'pane_AreasPROMEBAIII_4',
+            onEachFeature: pop_AreasPROMEBAIII_4,
+            style: style_AreasPROMEBAIII_4_0,
+        });
+        bounds_group.addLayer(layer_AreasPROMEBAIII_4);
+        map.addLayer(layer_AreasPROMEBAIII_4);
+        function pop_AreasPROMEBAII_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Barrio</strong><br />' + (feature.properties['Barrio'] !== null ? autolinker.link(feature.properties['Barrio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Préstamo</th>\
+                        <td>' + (feature.properties['Préstamo'] !== null ? autolinker.link(feature.properties['Préstamo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Superficie</th>\
+                        <td>' + (feature.properties['Superficie'] !== null ? autolinker.link(feature.properties['Superficie'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Partido</th>\
+                        <td>' + (feature.properties['Partido'] !== null ? autolinker.link(feature.properties['Partido'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Localidad</th>\
+                        <td>' + (feature.properties['Localidad'] !== null ? autolinker.link(feature.properties['Localidad'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Benef</th>\
+                        <td>' + (feature.properties['Benef'] !== null ? autolinker.link(feature.properties['Benef'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Etapa</th>\
+                        <td>' + (feature.properties['Etapa'] !== null ? autolinker.link(feature.properties['Etapa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Empresa</th>\
+                        <td>' + (feature.properties['Empresa'] !== null ? autolinker.link(feature.properties['Empresa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estado</th>\
+                        <td>' + (feature.properties['Estado'] !== null ? autolinker.link(feature.properties['Estado'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AreasPROMEBAII_5_0(feature) {
+            switch(String(feature.properties['Barrio'])) {
+                case 'Area El Tala - La Matera - San Francisco Solano, Quilmes':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(12,255,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area San Ignacio - La Morita, El Jagüel, Esteban Echeverria':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,243,244,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area San Jorge, San Martín, Pte. Perón - Virreyes, San Fernando':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,232,246,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° 2 de Abril - Almirante Brown':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,223,241,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Almafuerte - Villa Palito, La Matanza':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,213,234,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Area Unamuno - Lomas de Zamora':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(160,203,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° El Carmen - Berisso':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(130,187,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Eva Perón - Lanús Oeste':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(101,170,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° La Sirena - Florencio Varela':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(77,153,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° San Carlos - Moreno':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(55,135,192,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Santa magdalena - Güernica, Pte. Perón':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,116,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Hidalgo - José León Suares, Gral. San Martín':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(19,95,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Jardín - Victoria, San Fernando':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(8,73,145,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Tranquila - Dock Sud, Avellaneda':
+                    return {
+                pane: 'pane_AreasPROMEBAII_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(8,48,107,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AreasPROMEBAII_5');
+        map.getPane('pane_AreasPROMEBAII_5').style.zIndex = 405;
+        map.getPane('pane_AreasPROMEBAII_5').style['mix-blend-mode'] = 'normal';
+        var layer_AreasPROMEBAII_5 = new L.geoJson(json_AreasPROMEBAII_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AreasPROMEBAII_5',
+            layerName: 'layer_AreasPROMEBAII_5',
+            pane: 'pane_AreasPROMEBAII_5',
+            onEachFeature: pop_AreasPROMEBAII_5,
+            style: style_AreasPROMEBAII_5_0,
+        });
+        bounds_group.addLayer(layer_AreasPROMEBAII_5);
+        map.addLayer(layer_AreasPROMEBAII_5);
+        function pop_AreasPROMEBAI_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Barrio</strong><br />' + (feature.properties['Barrio'] !== null ? autolinker.link(feature.properties['Barrio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Prestamo</th>\
+                        <td>' + (feature.properties['Prestamo'] !== null ? autolinker.link(feature.properties['Prestamo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Partido</th>\
+                        <td>' + (feature.properties['Partido'] !== null ? autolinker.link(feature.properties['Partido'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Localidad</th>\
+                        <td>' + (feature.properties['Localidad'] !== null ? autolinker.link(feature.properties['Localidad'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Benef</th>\
+                        <td>' + (feature.properties['Benef'] !== null ? autolinker.link(feature.properties['Benef'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Etapa</th>\
+                        <td>' + (feature.properties['Etapa'] !== null ? autolinker.link(feature.properties['Etapa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Empresa</th>\
+                        <td>' + (feature.properties['Empresa'] !== null ? autolinker.link(feature.properties['Empresa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estado</th>\
+                        <td>' + (feature.properties['Estado'] !== null ? autolinker.link(feature.properties['Estado'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Sup./has.</th>\
+                        <td>' + (feature.properties['Sup./has.'] !== null ? autolinker.link(feature.properties['Sup./has.'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_AreasPROMEBAI_6_0(feature) {
+            switch(String(feature.properties['Barrio'])) {
+                case 'A° Hardoy- La Paz':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,222,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Almafuerte - Villa Palito':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,195,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Area Unamuno Zamora':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,154,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Don José Planificado':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,101,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Satelite II, Santa Elena':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,52,138,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Evita':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,19,102,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'B° Villa Talleres':
+                    return {
+                pane: 'pane_AreasPROMEBAI_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(152,0,67,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AreasPROMEBAI_6');
+        map.getPane('pane_AreasPROMEBAI_6').style.zIndex = 406;
+        map.getPane('pane_AreasPROMEBAI_6').style['mix-blend-mode'] = 'normal';
+        var layer_AreasPROMEBAI_6 = new L.geoJson(json_AreasPROMEBAI_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AreasPROMEBAI_6',
+            layerName: 'layer_AreasPROMEBAI_6',
+            pane: 'pane_AreasPROMEBAI_6',
+            onEachFeature: pop_AreasPROMEBAI_6,
+            style: style_AreasPROMEBAI_6_0,
+        });
+        bounds_group.addLayer(layer_AreasPROMEBAI_6);
+        map.addLayer(layer_AreasPROMEBAI_6);
+        function pop_Establecimientoseducativos_7(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre</strong><br />' + (feature.properties['Nombre'] !== null ? autolinker.link(feature.properties['Nombre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Establecimientoseducativos_7_0() {
+            return {
+                pane: 'pane_Establecimientoseducativos_7',
+                radius: 2.0,
+                opacity: 1,
+                color: 'rgba(6,17,10,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,255,106,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Establecimientoseducativos_7');
+        map.getPane('pane_Establecimientoseducativos_7').style.zIndex = 407;
+        map.getPane('pane_Establecimientoseducativos_7').style['mix-blend-mode'] = 'normal';
+        var layer_Establecimientoseducativos_7 = new L.geoJson(json_Establecimientoseducativos_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Establecimientoseducativos_7',
+            layerName: 'layer_Establecimientoseducativos_7',
+            pane: 'pane_Establecimientoseducativos_7',
+            onEachFeature: pop_Establecimientoseducativos_7,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Establecimientoseducativos_7_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Establecimientoseducativos_7);
+        function pop_Centrosdesalud_8(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre</strong><br />' + (feature.properties['Nombre'] !== null ? autolinker.link(feature.properties['Nombre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Centrosdesalud_8_0() {
+            return {
+                pane: 'pane_Centrosdesalud_8',
+                radius: 2.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,26,28,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Centrosdesalud_8');
+        map.getPane('pane_Centrosdesalud_8').style.zIndex = 408;
+        map.getPane('pane_Centrosdesalud_8').style['mix-blend-mode'] = 'normal';
+        var layer_Centrosdesalud_8 = new L.geoJson(json_Centrosdesalud_8, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Centrosdesalud_8',
+            layerName: 'layer_Centrosdesalud_8',
+            pane: 'pane_Centrosdesalud_8',
+            onEachFeature: pop_Centrosdesalud_8,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Centrosdesalud_8_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Centrosdesalud_8);
+        function pop_RedVialNacional_9(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Ruta</strong><br />' + (feature.properties['Ruta'] !== null ? autolinker.link(feature.properties['Ruta'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RedVialNacional_9_0() {
+            return {
+                pane: 'pane_RedVialNacional_9',
+                opacity: 1,
+                color: 'rgba(219,30,42,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RedVialNacional_9');
+        map.getPane('pane_RedVialNacional_9').style.zIndex = 409;
+        map.getPane('pane_RedVialNacional_9').style['mix-blend-mode'] = 'normal';
+        var layer_RedVialNacional_9 = new L.geoJson(json_RedVialNacional_9, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RedVialNacional_9',
+            layerName: 'layer_RedVialNacional_9',
+            pane: 'pane_RedVialNacional_9',
+            onEachFeature: pop_RedVialNacional_9,
+            style: style_RedVialNacional_9_0,
+        });
+        bounds_group.addLayer(layer_RedVialNacional_9);
+        function pop_RedVialProvincial_10(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Ruta</strong><br />' + (feature.properties['Ruta'] !== null ? autolinker.link(feature.properties['Ruta'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RedVialProvincial_10_0() {
+            return {
+                pane: 'pane_RedVialProvincial_10',
+                opacity: 1,
+                color: 'rgba(245,241,12,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RedVialProvincial_10');
+        map.getPane('pane_RedVialProvincial_10').style.zIndex = 410;
+        map.getPane('pane_RedVialProvincial_10').style['mix-blend-mode'] = 'normal';
+        var layer_RedVialProvincial_10 = new L.geoJson(json_RedVialProvincial_10, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RedVialProvincial_10',
+            layerName: 'layer_RedVialProvincial_10',
+            pane: 'pane_RedVialProvincial_10',
+            onEachFeature: pop_RedVialProvincial_10,
+            style: style_RedVialProvincial_10_0,
+        });
+        bounds_group.addLayer(layer_RedVialProvincial_10);
+        function pop_RedFerroviaria_11(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre</strong><br />' + (feature.properties['Nombre'] !== null ? autolinker.link(feature.properties['Nombre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_RedFerroviaria_11_0() {
+            return {
+                pane: 'pane_RedFerroviaria_11',
+                opacity: 1,
+                color: 'rgba(6,17,10,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RedFerroviaria_11');
+        map.getPane('pane_RedFerroviaria_11').style.zIndex = 411;
+        map.getPane('pane_RedFerroviaria_11').style['mix-blend-mode'] = 'normal';
+        var layer_RedFerroviaria_11 = new L.geoJson(json_RedFerroviaria_11, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RedFerroviaria_11',
+            layerName: 'layer_RedFerroviaria_11',
+            pane: 'pane_RedFerroviaria_11',
+            onEachFeature: pop_RedFerroviaria_11,
+            style: style_RedFerroviaria_11_0,
+        });
+        bounds_group.addLayer(layer_RedFerroviaria_11);
+        function pop_Estacionesdetren_12(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Nombre</strong><br />' + (feature.properties['Nombre'] !== null ? autolinker.link(feature.properties['Nombre'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fuente</th>\
+                        <td>' + (feature.properties['Fuente'] !== null ? autolinker.link(feature.properties['Fuente'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Estacionesdetren_12_0() {
+            return {
+                pane: 'pane_Estacionesdetren_12',
+                radius: 2.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,241,12,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Estacionesdetren_12');
+        map.getPane('pane_Estacionesdetren_12').style.zIndex = 412;
+        map.getPane('pane_Estacionesdetren_12').style['mix-blend-mode'] = 'normal';
+        var layer_Estacionesdetren_12 = new L.geoJson(json_Estacionesdetren_12, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Estacionesdetren_12',
+            layerName: 'layer_Estacionesdetren_12',
+            pane: 'pane_Estacionesdetren_12',
+            onEachFeature: pop_Estacionesdetren_12,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Estacionesdetren_12_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Estacionesdetren_12);
+        var baseMaps = {};
+        var overlaysTree = [
+        {label: '<b>Vias de comunicación</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/Estacionesdetren_12.png" /> Estaciones de tren', layer: layer_Estacionesdetren_12},
+            {label: '<img src="legend/RedFerroviaria_11.png" /> Red Ferroviaria', layer: layer_RedFerroviaria_11},
+            {label: '<img src="legend/RedVialProvincial_10.png" /> Red Vial Provincial', layer: layer_RedVialProvincial_10},
+            {label: '<img src="legend/RedVialNacional_9.png" /> Red Vial Nacional', layer: layer_RedVialNacional_9},]},
+        {label: '<b>Servicios</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/Centrosdesalud_8.png" /> Centros de salud', layer: layer_Centrosdesalud_8},
+            {label: '<img src="legend/Establecimientoseducativos_7.png" /> Establecimientos educativos', layer: layer_Establecimientoseducativos_7},]},
+            {label: 'Areas PROMEBA I<br /><table><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_AHardoyLaPaz0.png" /></td><td>A° Hardoy- La Paz</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BAlmafuerteVillaPalito1.png" /></td><td>B° Almafuerte - Villa Palito</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BAreaUnamunoZamora2.png" /></td><td>B° Area Unamuno Zamora</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BDonJoséPlanificado3.png" /></td><td>B° Don José Planificado</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BSateliteIISantaElena4.png" /></td><td>B° Satelite II, Santa Elena</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BVillaEvita5.png" /></td><td>B° Villa Evita</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAI_6_BVillaTalleres6.png" /></td><td>B° Villa Talleres</td></tr></table>', layer: layer_AreasPROMEBAI_6},
+            {label: 'Areas PROMEBA II<br /><table><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_AreaElTalaLaMateraSanFranciscoSolanoQuilmes0.png" /></td><td>Area El Tala - La Matera - San Francisco Solano, Quilmes</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_AreaSanIgnacioLaMoritaElJagüelEstebanEcheverria1.png" /></td><td>Area San Ignacio - La Morita, El Jagüel, Esteban Echeverria</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_AreaSanJorgeSanMartínPtePerónVirreyesSanFernando2.png" /></td><td>Area San Jorge, San Martín, Pte. Perón - Virreyes, San Fernando</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_B2deAbrilAlmiranteBrown3.png" /></td><td>B° 2 de Abril - Almirante Brown</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BAlmafuerteVillaPalitoLaMatanza4.png" /></td><td>B° Almafuerte - Villa Palito, La Matanza</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BAreaUnamunoLomasdeZamora5.png" /></td><td>B° Area Unamuno - Lomas de Zamora</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BElCarmenBerisso6.png" /></td><td>B° El Carmen - Berisso</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BEvaPerónLanúsOeste7.png" /></td><td>B° Eva Perón - Lanús Oeste</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BLaSirenaFlorencioVarela8.png" /></td><td>B° La Sirena - Florencio Varela</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BSanCarlosMoreno9.png" /></td><td>B° San Carlos - Moreno</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BSantamagdalenaGüernicaPtePerón10.png" /></td><td>B° Santa magdalena - Güernica, Pte. Perón</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BVillaHidalgoJoséLeónSuaresGralSanMartín11.png" /></td><td>B° Villa Hidalgo - José León Suares, Gral. San Martín</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BVillaJardínVictoriaSanFernando12.png" /></td><td>B° Villa Jardín - Victoria, San Fernando</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAII_5_BVillaTranquilaDockSudAvellaneda13.png" /></td><td>B° Villa Tranquila - Dock Sud, Avellaneda</td></tr></table>', layer: layer_AreasPROMEBAII_5},
+            {label: 'Areas PROMEBA III<br /><table><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_AreaElTalaLaMateraSanFranciscoSolanoQuilmes0.png" /></td><td>Area El Tala - La Matera - San Francisco Solano, Quilmes</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_AreaOesteBSanJorgeGdorJulioACostaFlorencioVarela1.png" /></td><td>Area Oeste, B° San Jorge - Gdor. Julio A. Costa, Florencio Varela</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_AreaSanIgnacioLaMoritaElJagüelEstebanEcheverria2.png" /></td><td>Area San Ignacio - La Morita, El Jagüel, Esteban Echeverria</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_B2deAbrilAlmiranteBrown3.png" /></td><td>B° 2 de Abril - Almirante Brown</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_B6deAgostoNegriMataderoyMalvicinoZárate4.png" /></td><td>B° 6 de Agosto, Negri, Matadero y Malvicino, Zárate</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BAlmafuerteVillaPalitoLaMatanza5.png" /></td><td>B° Almafuerte - Villa Palito, La Matanza</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BElCarmenBerisso6.png" /></td><td>B° El Carmen - Berisso</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BEvaPerónLanúsOeste7.png" /></td><td>B° Eva Perón - Lanús Oeste</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BPrimaveraJoséCPaz8.png" /></td><td>B° Primavera - José C. Paz</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BSanCarlosMoreno9.png" /></td><td>B° San Carlos - Moreno</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BSantaElenaySantaMagdalenaGüernicaPtePerón10.png" /></td><td>B° Santa Elena y Santa Magdalena - Güernica, Pte. Perón</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BTrujuiTrujuiMoreno11.png" /></td><td>B° Trujui - Trujui, Moreno</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BVillaAngusZárate12.png" /></td><td>B° Villa Angus - Zárate</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BVillaAzulWildeAvellaneda13.png" /></td><td>B° Villa Azul - Wilde, Avellaneda</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BVillaHidalgoJoséLeónSuaresGralSanMartín14.png" /></td><td>B° Villa Hidalgo - José León Suares, Gral. San Martín</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIII_4_BVillaTranquilaDockSudAvellaneda15.png" /></td><td>B° Villa Tranquila - Dock Sud, Avellaneda</td></tr></table>', layer: layer_AreasPROMEBAIII_4},
+            {label: 'Areas PROMEBA IV<br /><table><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_AreaEstacionVillegasB15demarzoSanPetesburgoyPuertadeHierroSanJusto0.png" /></td><td>Area Estacion Villegas - B° 15 de marzo, San Petesburgo y Puerta de Hierro - San Justo</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_AreaSanIgnacioLaMoritaElJagüel1.png" /></td><td>Area San Ignacio - La Morita, El Jagüel</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_B2deAbril2.png" /></td><td>B° 2 de Abril</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BAlmafuerteVillaPalito3.png" /></td><td>B° Almafuerte - Villa Palito</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BElCarmen4.png" /></td><td>B° El Carmen</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BIslaMacielOesteDockSud5.png" /></td><td>B° Isla Maciel Oeste - Dock Sud</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BLaHerraduraVillaFiorito6.png" /></td><td>B° La Herradura - Villa Fiorito</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BPrimavera7.png" /></td><td>B° Primavera</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BSantaElenaGüernica8.png" /></td><td>B° Santa Elena - Güernica</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BTrujuiTrujui9.png" /></td><td>B° Trujui - Trujui</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BVillaAzulIIWilde10.png" /></td><td>B° Villa Azul II - Wilde</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BVillaHidalgoJoséLeónSuarez11.png" /></td><td>B° Villa Hidalgo - José León Suarez</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_BVillaTranquilaDockSud12.png" /></td><td>B° Villa Tranquila - Dock Sud</td></tr><tr><td style="text-align: center;"><img src="legend/AreasPROMEBAIV_3_ParejePiriaElMolinoClubdePescayElZanjónPuntaLara13.png" /></td><td>Pareje Piria (El Molino, Club de Pesca y El Zanjón) - Punta Lara</td></tr></table>', layer: layer_AreasPROMEBAIV_3},
+            {label: '<img src="legend/RMBA_2.png" /> RMBA', layer: layer_RMBA_2},
+            {label: '<img src="legend/BuenosAires_1.png" /> Buenos Aires', layer: layer_BuenosAires_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var i = 0;
+        layer_BuenosAires_1.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['q2wHide_nam'] !== null?String('<div style="color: #323232; font-size: 10pt; font-weight: bold; font-family: \'Arial\', sans-serif;">' + layer.feature.properties['q2wHide_nam']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_BuenosAires_1'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        resetLabels([layer_BuenosAires_1,layer_RMBA_2]);
+        map.on("zoomend", function(){
+            resetLabels([layer_BuenosAires_1,layer_RMBA_2]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_BuenosAires_1,layer_RMBA_2]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_BuenosAires_1,layer_RMBA_2]);
+        });
+        </script>
+    </body>
+</html>
